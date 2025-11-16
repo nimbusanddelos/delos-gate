@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="delos-key" content="v1">
+  <title>Delos Gate</title>
+  <style>body{font-family:Arial;background:#000;color:#0f0;text-align:center;padding:50px;}h1{font-size:2em;}</style>
+</head>
+<body>
+  <h1>⚡ Delos Circle Gate ⚡</h1>
+  <p id="status">Plug in YubiKey → <strong>Touch the gold disc</strong> when it blinks</p>
+
+  <script>
+    async function delosHandshake() {
+      document.getElementById("status").innerHTML = "🔵 Requesting key...";
+      
+      const challenge = new TextEncoder().encode("delos-circle-2025-wizard");
+      const publicKey = {
+        challenge: challenge,
+        allowCredentials: [],
+        userVerification: "required",
+        timeout: 60000
+      };
+
+      try {
+        const assertion = await navigator.credentials.get({ publicKey });
+        document.getElementById("status").innerHTML = `
+          <p style="color:#0f0;">✅ DELOS KEY VERIFIED</p>
+          <p><strong>WELCOME, WIZARD.</strong></p>
+          <small>Key ID: ${assertion.id.slice(0,16)}...</small>
+        `;
+      } catch (err) {
+        document.getElementById("status").innerHTML = `
+          <p style="color:#f00;">❌ FAILED: ${err.message}</p>
+          <p>Did you register your YubiKey yet?</p>
+        `;
+      }
+    }
+
+    // Auto-start when page loads
+    if ('credentials' in navigator) {
+      setTimeout(delosHandshake, 1000);
+    } else {
+      document.getElementById("status").innerHTML = "❌ WebAuthn not supported";
+    }
+  </script>
+</body>
+</html>
